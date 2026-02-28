@@ -602,20 +602,42 @@ export default function Home() {
           </p>
 
           {/* Prize podium */}
-          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-12 text-center font-code">
-            {[
-              { place: '🥈 2nd', prize: '₹15,000', color: 'text-gray-300' },
-              { place: '🏆 1st', prize: '₹25,000', color: 'text-yellow-400' },
-              { place: '🥉 3rd', prize: '₹10,000', color: 'text-orange-400' },
-            ].map(({ place, prize, color }) => (
-              <div
-                key={place}
-                className="p-4 border border-red-900/40 bg-red-950/10 hover:border-red-500/60 transition-all duration-300"
-              >
-                <div className={`text-lg font-bold ${color}`} style={{ fontFamily: "'Space Mono', monospace" }}>{place}</div>
-                <div className="text-red-400 text-xl font-bold mt-1 stat-glow" style={{ fontFamily: "'Space Mono', monospace" }}>{prize}</div>
+          {/* Mobile: 1st centered on top row, 2nd+3rd on bottom row. Desktop: single row */}
+          <div className="max-w-2xl mx-auto mb-12 text-center font-code">
+            {/* Mobile top row — 1st place (centered) */}
+            <div className="flex justify-center mb-4 md:hidden">
+              <div className="p-4 border border-red-900/40 bg-red-950/10 hover:border-yellow-500/60 transition-all duration-300 w-1/2">
+                <div className="text-lg font-bold text-yellow-400" style={{ fontFamily: "'Space Mono', monospace" }}>🏆 1st</div>
+                <div className="text-red-400 text-xl font-bold mt-1 stat-glow" style={{ fontFamily: "'Space Mono', monospace" }}>₹25,000</div>
               </div>
-            ))}
+            </div>
+            {/* Mobile bottom row — 2nd & 3rd */}
+            <div className="flex gap-4 mb-4 md:hidden">
+              <div className="flex-1 p-4 border border-red-900/40 bg-red-950/10 hover:border-red-500/60 transition-all duration-300">
+                <div className="text-lg font-bold text-gray-300" style={{ fontFamily: "'Space Mono', monospace" }}>🥈 2nd</div>
+                <div className="text-red-400 text-xl font-bold mt-1 stat-glow" style={{ fontFamily: "'Space Mono', monospace" }}>₹15,000</div>
+              </div>
+              <div className="flex-1 p-4 border border-red-900/40 bg-red-950/10 hover:border-red-500/60 transition-all duration-300">
+                <div className="text-lg font-bold text-orange-400" style={{ fontFamily: "'Space Mono', monospace" }}>🥉 3rd</div>
+                <div className="text-red-400 text-xl font-bold mt-1 stat-glow" style={{ fontFamily: "'Space Mono', monospace" }}>₹10,000</div>
+              </div>
+            </div>
+            {/* Desktop — single row: 1st, 2nd, 3rd */}
+            <div className="hidden md:grid grid-cols-3 gap-4">
+              {[
+                { place: '🏆 1st', prize: '₹25,000', color: 'text-yellow-400' },
+                { place: '🥈 2nd', prize: '₹15,000', color: 'text-gray-300' },
+                { place: '🥉 3rd', prize: '₹10,000', color: 'text-orange-400' },
+              ].map(({ place, prize, color }) => (
+                <div
+                  key={place}
+                  className="p-4 border border-red-900/40 bg-red-950/10 hover:border-red-500/60 transition-all duration-300"
+                >
+                  <div className={`text-lg font-bold ${color}`} style={{ fontFamily: "'Space Mono', monospace" }}>{place}</div>
+                  <div className="text-red-400 text-xl font-bold mt-1 stat-glow" style={{ fontFamily: "'Space Mono', monospace" }}>{prize}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Tracks grid */}
@@ -750,14 +772,20 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center gap-6 font-code text-sm">
-            {['EMAIL', 'INSTAGRAM', 'TWITTER/X'].map((link) => (
+            {[
+              { label: 'EMAIL', href: 'mailto:contact@hackathena.com' },
+              { label: 'INSTAGRAM', href: 'https://www.instagram.com/hackathena/' },
+              { label: 'TWITTER/X', href: '#' },
+            ].map(({ label, href }) => (
               <a
-                key={link}
-                href={link === 'EMAIL' ? 'mailto:contact@hackathena.com' : '#'}
+                key={label}
+                href={href}
+                target={href.startsWith('http') ? '_blank' : undefined}
+                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 className="text-red-600 hover:text-white transition-colors"
                 style={{ fontFamily: "'Space Mono', monospace", textShadow: '0 0 6px rgba(220,38,38,.4)' }}
               >
-                {link}
+                {label}
               </a>
             ))}
           </div>

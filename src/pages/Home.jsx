@@ -63,6 +63,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [powerState, setPowerState] = useState(1); // 1 = on, 0 = off (for flicker effect)
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -97,6 +98,18 @@ export default function Home() {
     const { currentTarget, clientX, clientY } = e;
     const { left, top } = currentTarget.getBoundingClientRect();
     setMousePos({ x: clientX - left, y: clientY - top });
+  };
+
+  // Trigger the same double-flicker on demand (e.g. hamburger tap)
+  const triggerFlicker = () => {
+    setPowerState(0);
+    setTimeout(() => {
+      setPowerState(1);
+      setTimeout(() => {
+        setPowerState(0);
+        setTimeout(() => setPowerState(1), 120);
+      }, 80);
+    }, 200);
   };
 
   if (loading) {
@@ -283,10 +296,19 @@ export default function Home() {
       {/* ── Navigation ── */}
       <nav
         className={`fixed w-full z-50 border-b border-red-900/40 bg-black/80 backdrop-blur-md neon-element ${powerState === 0 ? 'power-off' : ''}`}
-        style={{ transition: 'opacity 0.05s' }}
+        style={{ transition: 'opacity 0.05s', fontFamily: "'Space Mono', monospace" }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-center items-center">
-          <div className="space-x-8 flex items-center text-sm uppercase tracking-widest font-code text-gray-400">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          {/* Logo / brand mark */}
+          <img
+            src="/src/assets/hackathena.svg"
+            alt="Hackathena"
+            className="h-14 w-14"
+            style={{ display: 'block' }}
+          />
+
+          {/* Desktop nav links */}
+          <div className="hidden sm:flex space-x-8 items-center text-sm uppercase tracking-widest font-code text-gray-400">
             {['About', 'Tracks', 'Communicate'].map((item) => (
               <a
                 key={item}
@@ -296,12 +318,63 @@ export default function Home() {
                 {item}
               </a>
             ))}
-            <button
+            <a
+              href="https://hackathena-26.devfolio.co/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="border border-red-600 text-red-500 px-4 py-2 hover:bg-red-900/40 transition-all duration-300 neon-border btn-flicker"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
               Register
-            </button>
+            </a>
+          </div>
+
+          {/* Hamburger button — mobile only */}
+          <button
+            className="sm:hidden flex flex-col justify-center items-center gap-[5px] w-8 h-8 focus:outline-none"
+            onClick={() => { setMenuOpen((o) => !o); triggerFlicker(); }}
+            aria-label="Toggle menu"
+          >
+            <span
+              className="block w-6 h-[2px] bg-red-500 transition-all duration-300"
+              style={{
+                transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none',
+                boxShadow: '0 0 6px rgba(220,38,38,.7)',
+              }}
+            />
+            <span
+              className="block w-6 h-[2px] bg-red-500 transition-all duration-300"
+              style={{
+                opacity: menuOpen ? 0 : 1,
+                boxShadow: '0 0 6px rgba(220,38,38,.7)',
+              }}
+            />
+            <span
+              className="block w-6 h-[2px] bg-red-500 transition-all duration-300"
+              style={{
+                transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none',
+                boxShadow: '0 0 6px rgba(220,38,38,.7)',
+              }}
+            />
+          </button>
+        </div>
+
+        {/* Mobile dropdown */}
+        <div
+          className="sm:hidden overflow-hidden transition-all duration-300"
+          style={{ maxHeight: menuOpen ? '200px' : '0px' }}
+        >
+          <div className="flex flex-col items-center gap-5 py-6 text-sm uppercase tracking-widest font-code text-gray-400 border-t border-red-900/30">
+            {['About', 'Tracks', 'Communicate'].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="hover:text-red-500 transition-colors duration-200"
+                onClick={() => setMenuOpen(false)}
+              >
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </nav>
@@ -412,18 +485,22 @@ export default function Home() {
 
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center relative z-20">
-            <button
+            <a
+              href="https://hackathena-26.devfolio.co/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-red-700 text-white font-code px-8 py-4 uppercase tracking-[.2em] font-bold hover:bg-red-600 transition-all duration-300 glitch-hover neon-border btn-flicker"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
               Apply via Devfolio
-            </button>
+            </a>
             <button
               className="border border-gray-600 bg-black/50 text-gray-300 font-code px-8 py-4 uppercase tracking-[.2em] font-bold hover:border-red-500 hover:text-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,.4)] transition-all duration-300 backdrop-blur-sm btn-flicker"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
               Join Discord
             </button>
+
           </div>
         </div>
       </section>

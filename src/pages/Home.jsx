@@ -513,7 +513,7 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center font-code">
           {[
-            { value: '₹50K+', label: 'In Prizes' },
+            { value: '₹60K', label: 'Prize Pool' },
             { value: '24', label: 'Hours' },
             { value: '500+', label: 'Hackers' },
             { value: '∞', label: 'Lines of Code' },
@@ -591,16 +591,64 @@ export default function Home() {
       <section id="tracks" className="py-24 px-6 bg-red-950/5 border-t border-red-900/20" style={{ zIndex: 2, position: 'relative' }}>
         <div className="max-w-6xl mx-auto">
           <h2
-            className="font-stranger text-4xl text-white mb-12 tracking-wider text-center"
+            className="font-stranger text-4xl text-white mb-4 tracking-wider text-center"
             style={{ textShadow: '0 0 8px rgba(220,38,38,.4)' }}
           >
             Choose Your Dimension
           </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {['Web3 & Blockchain', 'AI & Machine Learning', 'Open Innovation'].map((track, i) => (
+          <p className="text-center font-code text-gray-500 text-sm mb-12" style={{ fontFamily: "'Space Mono', monospace" }}>
+            Total Prize Pool &nbsp;—&nbsp;
+            <span className="text-red-400 font-bold" style={{ textShadow: '0 0 8px rgba(220,38,38,.5)' }}>₹60,000</span>
+          </p>
+
+          {/* Prize podium */}
+          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-12 text-center font-code">
+            {[
+              { place: '🥈 2nd', prize: '₹15,000', color: 'text-gray-300' },
+              { place: '🏆 1st', prize: '₹25,000', color: 'text-yellow-400' },
+              { place: '🥉 3rd', prize: '₹10,000', color: 'text-orange-400' },
+            ].map(({ place, prize, color }) => (
               <div
-                key={i}
-                className="p-6 border border-gray-800 bg-black transition-all duration-300 group cursor-pointer hover:-translate-y-2"
+                key={place}
+                className="p-4 border border-red-900/40 bg-red-950/10 hover:border-red-500/60 transition-all duration-300"
+              >
+                <div className={`text-lg font-bold ${color}`} style={{ fontFamily: "'Space Mono', monospace" }}>{place}</div>
+                <div className="text-red-400 text-xl font-bold mt-1 stat-glow" style={{ fontFamily: "'Space Mono', monospace" }}>{prize}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tracks grid */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                id: 'TRACK_01',
+                name: 'Cyber Security',
+                icon: '🔐',
+                prize: '₹5,000 Special Prize',
+                desc: 'Hack the hackers. Build solutions that defend, detect, and disrupt cyber threats in the real world.',
+                hasPrize: true,
+              },
+              {
+                id: 'TRACK_02',
+                name: 'Cloud Computing',
+                icon: '☁️',
+                prize: '₹5,000 Special Prize',
+                desc: 'Architect the cloud. Design scalable, efficient, and resilient cloud-native solutions.',
+                hasPrize: true,
+              },
+              {
+                id: 'TRACK_03',
+                name: 'Open Innovation',
+                icon: '✨',
+                prize: null,
+                desc: 'No limits, no boundaries. Build anything that solves a real-world problem and wows the judges.',
+                hasPrize: false,
+              },
+            ].map(({ id, name, icon, prize, desc, hasPrize }) => (
+              <div
+                key={id}
+                className="p-6 border border-gray-800 bg-black transition-all duration-300 group cursor-pointer hover:-translate-y-2 relative"
                 style={{ boxShadow: '0 0 0 rgba(220,38,38,0)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = '#dc2626';
@@ -611,42 +659,48 @@ export default function Home() {
                   e.currentTarget.style.boxShadow = '0 0 0 rgba(220,38,38,0)';
                 }}
               >
+                {hasPrize && (
+                  <div
+                    className="absolute top-3 right-3 text-xs font-bold px-2 py-1 border border-yellow-500/60 text-yellow-400"
+                    style={{ fontFamily: "'Space Mono', monospace", textShadow: '0 0 6px rgba(234,179,8,.4)' }}
+                  >
+                    PRIZE TRACK
+                  </div>
+                )}
+                <div className="text-2xl mb-3">{icon}</div>
                 <div
-                  className="text-red-600 font-code text-sm mb-4 neon-hum"
+                  className="text-red-600 font-code text-xs mb-3 neon-hum"
                   style={{ fontFamily: "'Space Mono', monospace", textShadow: '0 0 6px rgba(220,38,38,.5)' }}
                 >
-                  TRACK_0{i + 1}
+                  {id}
                 </div>
                 <h3
-                  className="font-stranger text-2xl text-white mb-4 group-hover:text-red-400 transition-colors duration-300"
+                  className="font-stranger text-2xl text-white mb-2 group-hover:text-red-400 transition-colors duration-300"
                   style={{ transition: 'text-shadow .3s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.textShadow = '0 0 10px rgba(220,38,38,.6)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.textShadow = 'none'; }}
                 >
-                  {track}
+                  {name}
                 </h3>
+                {prize && (
+                  <div className="text-yellow-400 font-bold text-sm mb-3" style={{ fontFamily: "'Space Mono', monospace", textShadow: '0 0 6px rgba(234,179,8,.4)' }}>
+                    🎯 {prize}
+                  </div>
+                )}
                 <p className="font-code text-sm text-gray-500" style={{ fontFamily: "'Space Mono', monospace" }}>
-                  Build solutions that push the boundaries of this reality.
+                  {desc}
                 </p>
               </div>
             ))}
           </div>
-          <div className="text-center mt-12">
-            <button
-              className="text-red-500 font-code text-sm hover:text-white transition-colors border-b border-red-500 pb-1"
-              style={{
-                fontFamily: "'Space Mono', monospace",
-                textShadow: '0 0 6px rgba(220,38,38,.4)',
-              }}
-            >
-              View All Tracks & Prizes ➔
-            </button>
-          </div>
+          <p className="text-center font-code text-gray-600 text-xs mt-6" style={{ fontFamily: "'Space Mono', monospace" }}>
+            ⚠️ Special track prizes are available only for Cyber Security &amp; Cloud Computing tracks.
+          </p>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer id="contact" className="py-12 border-t border-red-900/40 bg-black relative overflow-hidden" style={{ zIndex: 2 }}>
+      <footer id="communicate" className="py-16 border-t border-red-900/40 bg-black relative overflow-hidden" style={{ zIndex: 2 }}>
         <div
           className="absolute bottom-0 w-full h-px"
           style={{
@@ -656,14 +710,45 @@ export default function Home() {
         />
         <div className="max-w-4xl mx-auto text-center px-6">
           <h3
-            className="font-stranger text-3xl text-white mb-6 tracking-widest"
+            className="font-stranger text-3xl text-white mb-3 tracking-widest"
             style={{ textShadow: '0 0 8px rgba(220,38,38,.4)' }}
           >
             Establish Connection
           </h3>
-          <p className="font-code text-gray-500 mb-8 text-sm" style={{ fontFamily: "'Space Mono', monospace" }}>
-            Jyothi Engineering College • Dept of CSE
+          <p className="font-code text-gray-500 mb-2 text-sm" style={{ fontFamily: "'Space Mono', monospace" }}>
+            Dept of CSE &nbsp;•&nbsp; Jyothi Engineering College, Cheruthuruthy
           </p>
+          <p className="font-code text-gray-600 mb-10 text-xs" style={{ fontFamily: "'Space Mono', monospace" }}>
+            📍 March 12 &amp; 13, 2026 &nbsp;•&nbsp; 24 Hours
+          </p>
+
+          {/* Contact persons */}
+          <div className="flex flex-col sm:flex-row justify-center gap-6 mb-10">
+            {[
+              { name: 'Alan', phone: '+91 80863 50450' },
+              { name: 'Antony', phone: '+91 89430 28327' },
+            ].map(({ name, phone }) => (
+              <a
+                key={name}
+                href={`tel:${phone.replace(/\s/g, '')}`}
+                className="flex flex-col items-center p-5 border border-red-900/40 bg-red-950/10 hover:border-red-500/60 transition-all duration-300 group min-w-[180px]"
+              >
+                <span
+                  className="font-stranger text-white text-lg mb-1 group-hover:text-red-400 transition-colors"
+                  style={{ textShadow: '0 0 6px rgba(220,38,38,.3)' }}
+                >
+                  {name}
+                </span>
+                <span
+                  className="font-code text-red-500 text-sm neon-hum"
+                  style={{ fontFamily: "'Space Mono', monospace", textShadow: '0 0 6px rgba(220,38,38,.4)' }}
+                >
+                  📞 {phone}
+                </span>
+              </a>
+            ))}
+          </div>
+
           <div className="flex justify-center gap-6 font-code text-sm">
             {['EMAIL', 'INSTAGRAM', 'TWITTER/X'].map((link) => (
               <a

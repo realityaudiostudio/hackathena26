@@ -131,6 +131,8 @@ export default function Home() {
             color: #dc2626;
             font-size: 1.25rem;
             letter-spacing: 0.5em;
+            text-align: center;
+            padding: 0 1rem;
             animation: boot-flicker 1.5s ease-in-out forwards;
             text-shadow: 0 0 20px rgba(220,38,38,0.9), 0 0 40px rgba(220,38,38,0.5), 0 0 80px rgba(220,38,38,0.2);
           }

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250">
+
+<style>
+
+/* Red Bar Slide */
+#redBar {
+  transform: translateX(-40px);
+  animation: slideIn 0.6s ease-out forwards;
+}
+
+@keyframes slideIn {
+  to { transform: translateX(0); }
+}
+
+/* Letter: fade in with neon red outline so it’s visible on black */
+#letter {
+  opacity: 0;
+  fill: #150000;
+  stroke: #dc2626;
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 5px rgba(220,38,38,.9)) drop-shadow(0 0 12px rgba(220,38,38,.4));
+  animation: fadeIn 0.6s ease forwards 0.5s;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* White Shape: draw then flicker */
+#inner {
+  fill: none;
+  stroke: #FEFFFE;
+  stroke-width: 2;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation:
+    draw 1.2s ease forwards 1s,
+    neon-flicker 7s linear infinite 2.4s;
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Neon flicker — mirrors the main HACKATHENA title */
+@keyframes neon-flicker {
+   0%       { opacity:1;    filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px rgba(255,255,255,.6)); }
+   5%       { opacity:.4;   filter: none; }
+   6%       { opacity:1;    filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px rgba(255,255,255,.7)); }
+  20%       { opacity:1; }
+  21%       { opacity:.05;  filter: none; }
+  22%       { opacity:1;    filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px rgba(255,255,255,.9)); }
+  40%       { opacity:1; }
+  41%       { opacity:.6;   filter: drop-shadow(0 0 2px #fff); }
+  42%       { opacity:1; }
+  70%       { opacity:1; }
+  71%       { opacity:.1;   filter: none; }
+  72%       { opacity:.8; }
+  73%       { opacity:1;    filter: drop-shadow(0 0 7px #fff) drop-shadow(0 0 16px rgba(255,255,255,.8)); }
+  100%      { opacity:1;    filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px rgba(255,255,255,.6)); }
+}
+
+/* Steady glow on bar */
+#redBar {
+  filter: drop-shadow(0 0 6px rgba(220,38,38,.8));
+}
+
+</style>
+
+<!-- Red Bar -->
+<path id="redBar"
+d="m53.11 18.12h4.82c13.18 0 23.01 10.64 23.01 21.86v188.9h-6.13c-11.66 0-21.7-9.85-21.7-20.19v-190.5z"
+fill="#AE0306"/>
+
+<!-- Letter Body (fill + stroke controlled by CSS) -->
+<path id="letter"
+d="m194.8 167.1v63.72h-4.95c-12.74 0-21.05-9.23-21.93-26.07-10.36 2.32-17.5 5.92-36.58 5.92-14.45 0-22.28-2.93-37.1-14.57l-4.98-3.87v-81.03c5.59-5.33 9.76-8.81 14.75-11.5l3.18 5.21-1.89-6.02c6.86-4.15 11.47-5.98 22.47-5.98l0.75 9.69 1.77-9.93c9.52 0 16.65 0.04 23.19 2.52l-1.89 5.91 3.75-4.98c21.56 7.74 39.46 22.72 39.46 57.64v13.34z"/>
+
+<!-- White Inner Shape -->
+<path id="inner"
+d="m129.8 116.2c-12.57 0-20.45 4.67-25.86 10.93l13.54 13.29c4.72-4.46 8.71-6.67 16.01-6.67 12.61 0 22.17 11.37 22.17 22.95 0 6.02-2.48 11.36-6.28 15.5l-31.77-31.78c-3.53 2.52-3.69 6.5-3.69 12.29 0 3.71-2.94 8.13-4.67 9.61-1.52 1.32 1.42 3.72 2.71 4.81s-0.54 3.65-0.54 4.79c0 1.13 0.46 2.06 0.46 2.87 0 0.82-1.83 3.95 1.41 5.78 3.23 1.83 10.65-0.69 13.51 0.25 3.4 1.13 2.39 5.47 2 8.12 19.4 0 37.71-16.78 37.71-34.64 0-17.85-14.21-38.1-36.71-38.1z"/>
+
+</svg>

@@ -1,0 +1,51 @@
+/* Global base styles for Stranger Things dark theme */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #000000;
+  --color-neon-red: #dc2626;
+  --color-neon-red-dim: rgba(220, 38, 38, 0.5);
+  --color-text: #d1d5db;
+  --font-stranger: 'Cinzel', serif;
+  --font-code: 'Space Mono', monospace;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-code);
+  overflow-x: hidden;
+  /* Subtle dark-crimson noise texture via background blend */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar — red on dark */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0000;
+}
+::-webkit-scrollbar-thumb {
+  background: #7f1d1d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.8);
+}
+
+/* Text selection */
+::selection {
+  background: #7f1d1d;
+  color: #fff;
+}

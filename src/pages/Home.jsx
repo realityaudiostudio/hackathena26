@@ -497,12 +497,15 @@ export default function Home() {
             >
               Apply via Devfolio
             </a>
-            <button
+            <a
+              href="https://www.instagram.com/hackathena/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="border border-gray-600 bg-black/50 text-gray-300 font-code px-8 py-4 uppercase tracking-[.2em] font-bold hover:border-red-500 hover:text-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,.4)] transition-all duration-300 backdrop-blur-sm btn-flicker"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
-              Join Discord
-            </button>
+              Follow on Instagram
+            </a>
 
           </div>
         </div>
@@ -775,9 +778,8 @@ export default function Home() {
 
           <div className="flex justify-center gap-6 font-code text-sm">
             {[
-              { label: 'EMAIL', href: 'mailto:contact@hackathena.com' },
+              { label: 'EMAIL', href: 'mailto:hackathenacse@jecc.ac.in' },
               { label: 'INSTAGRAM', href: 'https://www.instagram.com/hackathena/' },
-              { label: 'TWITTER/X', href: '#' },
             ].map(({ label, href }) => (
               <a
                 key={label}

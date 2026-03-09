@@ -60,18 +60,226 @@ const VineBottomRight = () => (
   </svg>
 );
 
+// ─── Countdown helpers ──────────────────────────────────────────────────────
+function getTimeLeft() {
+  // March 12 2026, 00:00:00 IST (UTC+5:30)
+  const target = new Date('2026-03-12T00:00:00+05:30').getTime();
+  const diff = target - Date.now();
+  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, done: true };
+  const totalSec = Math.floor(diff / 1000);
+  return {
+    days: Math.floor(totalSec / 86400),
+    hours: Math.floor((totalSec % 86400) / 3600),
+    minutes: Math.floor((totalSec % 3600) / 60),
+    seconds: totalSec % 60,
+    done: false,
+  };
+}
+
+// ─── FlipDigit: slide new in from top, old out to bottom ────────────────────
+const FLIP_DURATION = 350; // ms
+
+function FlipDigit({ value }) {
+  const str = String(value).padStart(2, '0');
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        gap: '0.04em',
+        fontFamily: "'Space Mono', monospace",
+        fontSize: 'clamp(2rem, 6vw, 3.75rem)', // matches text-4xl md:text-6xl
+        fontWeight: 700,
+        color: '#f87171',                       // text-red-400
+        textShadow: '0 0 10px rgba(220,38,38,.6)',
+        lineHeight: 1,
+        letterSpacing: '0.02em',
+      }}
+    >
+      {str.split('').map((ch, i) => (
+        <SingleFlipChar key={i} char={ch} />
+      ))}
+    </span>
+  );
+}
+
+function SingleFlipChar({ char }) {
+  const [current, setCurrent] = useState(char);
+  const [prev, setPrev] = useState(null);
+  const [phase, setPhase] = useState('idle'); // 'idle' | 'flipping'
+
+  useEffect(() => {
+    if (char === current) return;
+    setPrev(current);
+    setCurrent(char);
+    setPhase('flipping');
+    const t = setTimeout(() => { setPrev(null); setPhase('idle'); }, FLIP_DURATION);
+    return () => clearTimeout(t);
+  }, [char]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sharedStyle = {
+    display: 'block',
+    width: '0.62em',
+    textAlign: 'center',
+    lineHeight: 1,
+  };
+
+  return (
+    <span style={{ position: 'relative', display: 'inline-block', width: '0.62em', overflow: 'hidden', lineHeight: 1 }}>
+      {/* Outgoing digit — slides down */}
+      {phase === 'flipping' && prev !== null && (
+        <span
+          style={{
+            ...sharedStyle,
+            position: 'absolute', top: 0, left: 0,
+            animation: `flip-out-down ${FLIP_DURATION}ms cubic-bezier(.4,0,.6,1) forwards`,
+          }}
+        >
+          {prev}
+        </span>
+      )}
+      {/* Incoming digit — slides in from top */}
+      <span
+        style={{
+          ...sharedStyle,
+          animation: phase === 'flipping'
+            ? `flip-in-top ${FLIP_DURATION}ms cubic-bezier(.4,0,.6,1) forwards`
+            : 'none',
+        }}
+      >
+        {current}
+      </span>
+    </span>
+  );
+}
+
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [powerState, setPowerState] = useState(1); // 1 = on, 0 = off (for flicker effect)
   const [menuOpen, setMenuOpen] = useState(false);
+  const [countdown, setCountdown] = useState(getTimeLeft);
+  const [tickEnabled, setTickEnabled] = useState(true);
+  const audioCtxRef = useRef(null);
 
+  // Continue button handler: unlock audio + dismiss loading in one gesture
+  const handleContinue = () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+    } catch (_) { }
+    setLoading(false);
+  };
+
+  // Resume AudioContext on first user gesture (browser autoplay policy)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
+    const resume = () => {
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+      window.removeEventListener('click', resume);
+      window.removeEventListener('keydown', resume);
+    };
+    window.addEventListener('click', resume);
+    window.addEventListener('keydown', resume);
+    return () => {
+      window.removeEventListener('click', resume);
+      window.removeEventListener('keydown', resume);
+    };
   }, []);
+
+  // ── Countdown + doomsday clock sound ─────────────────────────────────────
+  const tickPhaseRef = useRef(0); // alternates 0/1 for tick vs tock
+  useEffect(() => {
+    const playDoomsday = () => {
+      if (!tickEnabled) return;
+      try {
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const ctx = audioCtxRef.current;
+        const now = ctx.currentTime;
+        const isTick = tickPhaseRef.current === 0;
+        tickPhaseRef.current = isTick ? 1 : 0;
+
+        // ── 1. Deep bass thud (kick-drum style) ──────────────────────────
+        const bass = ctx.createOscillator();
+        const bassGain = ctx.createGain();
+        bass.type = 'sine';
+        bass.frequency.setValueAtTime(isTick ? 90 : 70, now);
+        bass.frequency.exponentialRampToValueAtTime(20, now + 0.25);
+        bassGain.gain.setValueAtTime(1.0, now);
+        bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        bass.connect(bassGain);
+        bassGain.connect(ctx.destination);
+        bass.start(now);
+        bass.stop(now + 0.45);
+
+        // ── 2. Metallic clank overtone ────────────────────────────────────
+        const metal = ctx.createOscillator();
+        const metalGain = ctx.createGain();
+        metal.type = 'sawtooth';
+        metal.frequency.setValueAtTime(isTick ? 480 : 360, now);
+        metalGain.gain.setValueAtTime(0.12, now);
+        metalGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+        // slight distortion via waveshaper
+        const wave = ctx.createWaveShaper();
+        const curve = new Float32Array(256);
+        for (let i = 0; i < 256; i++) {
+          const x = (i * 2) / 256 - 1;
+          curve[i] = (Math.PI + 80) * x / (Math.PI + 80 * Math.abs(x));
+        }
+        wave.curve = curve;
+        metal.connect(wave);
+        wave.connect(metalGain);
+        metalGain.connect(ctx.destination);
+        metal.start(now);
+        metal.stop(now + 0.2);
+
+        // ── 3. Noise burst (impact transient) ────────────────────────────
+        const bufLen = ctx.sampleRate * 0.06;
+        const noiseBuffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1);
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const noiseGain = ctx.createGain();
+        // bandpass filter for metallic texture
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = isTick ? 2200 : 1600;
+        bp.Q.value = 1.5;
+        noiseGain.gain.setValueAtTime(0.3, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+        noise.connect(bp);
+        bp.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noise.start(now);
+
+        // ── 4. Slow reverb tail (sub rumble) ─────────────────────────────
+        const sub = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(30, now + 0.05);
+        subGain.gain.setValueAtTime(0.0, now);
+        subGain.gain.linearRampToValueAtTime(0.25, now + 0.08);
+        subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+        sub.connect(subGain);
+        subGain.connect(ctx.destination);
+        sub.start(now + 0.05);
+        sub.stop(now + 0.75);
+      } catch (_) { }
+    };
+
+    const interval = setInterval(() => {
+      setCountdown(getTimeLeft());
+      playDoomsday();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [tickEnabled]);
 
   // Power-surge effect: occasionally cuts all neon lights randomly
   useEffect(() => {
@@ -126,6 +334,10 @@ export default function Home() {
             50% { opacity: 0.3; }
             55% { opacity: 1; }
           }
+          @keyframes btn-appear {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
           .boot-text {
             font-family: 'Space Mono', monospace;
             color: #dc2626;
@@ -140,6 +352,36 @@ export default function Home() {
         <div className="boot-text" style={{ position: 'relative', zIndex: 10 }}>
           INITIALIZING MAINFRAME...
         </div>
+        <button
+          onClick={handleContinue}
+          style={{
+            position: 'relative',
+            zIndex: 10,
+            marginTop: '2.5rem',
+            fontFamily: "'Space Mono', monospace",
+            color: '#dc2626',
+            background: 'transparent',
+            border: '1px solid #dc2626',
+            padding: '0.75rem 2.5rem',
+            fontSize: '0.85rem',
+            letterSpacing: '0.4em',
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            textShadow: '0 0 10px rgba(220,38,38,0.8)',
+            boxShadow: '0 0 14px rgba(220,38,38,0.35)',
+            animation: 'btn-appear 0.8s ease-out 1.2s both',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(220,38,38,0.15)';
+            e.currentTarget.style.boxShadow = '0 0 28px rgba(220,38,38,0.7)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.boxShadow = '0 0 14px rgba(220,38,38,0.35)';
+          }}
+        >
+          ▶ &nbsp;CONTINUE
+        </button>
       </div>
     );
   }
@@ -284,6 +526,16 @@ export default function Home() {
           50%      { text-shadow: 0 0 25px rgba(220,38,38,1), 0 0 50px rgba(220,38,38,.6); }
         }
         .stat-glow { animation: stat-glow 3s ease-in-out infinite; }
+
+        /* ── Flip clock digit transitions ── */
+        @keyframes flip-in-top {
+          from { transform: translateY(-110%); opacity: 0; }
+          to   { transform: translateY(0);     opacity: 1; }
+        }
+        @keyframes flip-out-down {
+          from { transform: translateY(0);     opacity: 1; }
+          to   { transform: translateY(110%);  opacity: 0; }
+        }
       `}</style>
 
       {/* ── Scanlines + Vignette overlays ── */}
@@ -321,15 +573,6 @@ export default function Home() {
                 {item}
               </a>
             ))}
-            <a
-              href="https://hackathena-26.devfolio.co/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-red-600 text-red-500 px-4 py-2 hover:bg-red-900/40 transition-all duration-300 neon-border btn-flicker"
-              style={{ fontFamily: "'Space Mono', monospace" }}
-            >
-              Register
-            </a>
           </div>
 
           {/* Hamburger button — mobile only */}
@@ -489,15 +732,6 @@ export default function Home() {
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center relative z-20">
             <a
-              href="https://hackathena-26.devfolio.co/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-red-700 text-white font-code px-8 py-4 uppercase tracking-[.2em] font-bold hover:bg-red-600 transition-all duration-300 glitch-hover neon-border btn-flicker"
-              style={{ fontFamily: "'Space Mono', monospace" }}
-            >
-              Apply via Devfolio
-            </a>
-            <a
               href="https://www.instagram.com/hackathena/"
               target="_blank"
               rel="noopener noreferrer"
@@ -538,6 +772,69 @@ export default function Home() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Countdown Timer ── */}
+      <section className="py-16 px-6 border-b border-red-900/40 bg-black/80 relative" style={{ zIndex: 2 }}>
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center gap-4 mb-8 justify-center">
+            <div className="h-px w-10 bg-red-600" style={{ boxShadow: '0 0 8px #dc2626' }} />
+            <h2
+              className="font-stranger text-2xl md:text-3xl text-white tracking-widest uppercase"
+              style={{ textShadow: '0 0 8px rgba(220,38,38,.5)', fontFamily: "'Cinzel', serif" }}
+            >
+              Begins In
+            </h2>
+            <div className="h-px w-10 bg-red-600" style={{ boxShadow: '0 0 8px #dc2626' }} />
+          </div>
+
+          {countdown.done ? (
+            <p
+              className="text-3xl text-red-400 font-stranger tracking-widest animate-pulse"
+              style={{ textShadow: '0 0 20px #dc2626', fontFamily: "'Cinzel', serif" }}
+            >
+              ⚡ THE HACKATHON HAS BEGUN ⚡
+            </p>
+          ) : (
+            <div className="grid grid-cols-4 gap-4 md:gap-8 mb-8">
+              {[
+                { value: countdown.days, label: 'DAYS' },
+                { value: countdown.hours, label: 'HOURS' },
+                { value: countdown.minutes, label: 'MINS' },
+                { value: countdown.seconds, label: 'SECS' },
+              ].map(({ value, label }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center p-4 md:p-6 border border-red-900/50 bg-red-950/10 relative overflow-hidden"
+                  style={{ boxShadow: '0 0 18px rgba(220,38,38,.12)' }}
+                >
+                  {/* top glow line */}
+                  <div
+                    className="absolute top-0 left-0 w-full h-[2px]"
+                    style={{ background: 'linear-gradient(to right, transparent, #dc2626, transparent)', boxShadow: '0 0 8px #dc2626' }}
+                  />
+                  <FlipDigit value={value} />
+                  <span
+                    className="text-xs text-gray-500 uppercase tracking-widest mt-2"
+                    style={{ fontFamily: "'Space Mono', monospace" }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tick sound toggle */}
+          <button
+            onClick={() => setTickEnabled((v) => !v)}
+            className="mt-2 inline-flex items-center gap-2 border border-red-900/60 px-5 py-2 text-xs uppercase tracking-widest font-code text-gray-400 hover:border-red-500 hover:text-red-400 transition-all duration-300"
+            style={{ fontFamily: "'Space Mono', monospace" }}
+          >
+            <span style={{ fontSize: '1rem' }}>{tickEnabled ? '🔊' : '🔇'}</span>
+            {tickEnabled ? 'Mute' : 'Enable Sound'}
+          </button>
         </div>
       </section>
 
